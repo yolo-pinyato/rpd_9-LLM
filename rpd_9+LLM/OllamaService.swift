@@ -32,8 +32,8 @@ final class OllamaService: ObservableObject {
     // MARK: - Configuration
     // For iOS Simulator, use localhost (which resolves better than 127.0.0.1)
     // For physical devices, use your Mac's IP address
-    private let defaultModel = "llama3.2:3b" // Faster model for quicker generation
-    private let fastModel = "llama3.2:1b" // Ultra-fast model for simple content
+    private let defaultModel = "llama3:latest" // Main model for content generation
+    private let fastModel = "llama3:latest" // Using same model for consistency
 
     // Dynamic URL properties based on environment and user settings
     private var ollamaBaseURL: String {
