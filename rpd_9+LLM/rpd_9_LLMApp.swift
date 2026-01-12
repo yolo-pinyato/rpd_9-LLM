@@ -841,9 +841,12 @@ class CompleteAppViewModel: ObservableObject {
                            selectedTrack: nil, isAdmin: false)
             self.showOnboarding = true
         }
-        
+
         self.adminSettings = db.getAdminSettings()
         loadData()
+
+        // Log app initialization
+        db.logEvent(userId: user.id, eventType: "app_launched")
     }
     
     func loadData() {
@@ -1025,6 +1028,40 @@ class CompleteAppViewModel: ObservableObject {
     func updateAdminSettings(_ settings: AdminSettings) {
         self.adminSettings = settings
         db.updateAdminSettings(settings)
+        db.logEvent(userId: user.id, eventType: "admin_settings_updated")
+    }
+
+    // MARK: - Data Logging Helpers
+
+    /// Log user navigation between tabs
+    func logTabChange(to tab: Int) {
+        let tabNames = ["Home", "Tasks", "Resources", "Rewards", "Profile", "Admin"]
+        if tab < tabNames.count {
+            db.logEvent(userId: user.id, eventType: "tab_changed", eventData: tabNames[tab])
+        }
+    }
+
+    /// Log task view
+    func logTaskView(task: LearningTask) {
+        db.logEvent(userId: user.id, eventType: "task_viewed", eventData: task.title)
+    }
+
+    /// Log resource access
+    func logResourceAccess(resource: String) {
+        db.logEvent(userId: user.id, eventType: "resource_accessed", eventData: resource)
+    }
+
+    /// Log content generation
+    func logContentGeneration(task: LearningTask, success: Bool) {
+        let status = success ? "success" : "failed"
+        db.logEvent(userId: user.id, eventType: "content_generated", eventData: "\(task.title) - \(status)")
+    }
+
+    /// Persist current app state to database
+    func saveAppState() {
+        db.updateUser(user)
+        db.updateAdminSettings(adminSettings)
+        db.logEvent(userId: user.id, eventType: "app_state_saved")
     }
 }
 
@@ -1305,7 +1342,7 @@ struct MainTabView: View {
                     Label("Home", systemImage: "house.fill")
                 }
                 .tag(0)
-            
+
             TasksView(viewModel: viewModel)
                 .tabItem {
                     Label("Tasks", systemImage: "list.bullet")
@@ -1337,6 +1374,9 @@ struct MainTabView: View {
                     }
                     .tag(5)
             }
+        }
+        .onChange(of: viewModel.selectedTab) { newValue in
+            viewModel.logTabChange(to: newValue)
         }
     }
 }
@@ -2131,6 +2171,9 @@ struct TaskDetailView: View {
             }
         }
         .onAppear {
+            // Log task view
+            viewModel.logTaskView(task: task)
+
             if !hasLoadedContent && !task.isCompleted {
                 loadLearningContent()
             }
@@ -2236,6 +2279,9 @@ struct TaskDetailView: View {
 
                 self.learningContent = content
                 self.isLoadingContent = false
+
+                // Log successful content generation
+                viewModel.logContentGeneration(task: task, success: true)
             } catch let error as OllamaService.OllamaError {
                 self.isLoadingContent = false
 
