@@ -1314,34 +1314,4 @@ struct TrackContentItem {
     let sequenceOrder: Int
 }
 
-enum TrackType: String, CaseIterable {
-    case hvac = "hvac"
-    case nursing = "nursing"
-    case spiritual = "spiritual"
-    case mentalHealth = "mental_health"
-    
-    var displayName: String {
-        switch self {
-        case .hvac: return "HVAC Track"
-        case .nursing: return "Registered Nurse"
-        case .spiritual: return "Spiritual Health"
-        case .mentalHealth: return "Mental Health"
-        }
-    }
-    
-    var icon: String {
-        switch self {
-        case .hvac: return "air.conditioner.horizontal"
-        case .nursing: return "cross.case"
-        case .spiritual: return "book.closed"
-        case .mentalHealth: return "brain.head.profile"
-        }
-    }
-    
-    var category: String {
-        switch self {
-        case .hvac, .nursing: return "Job Development"
-        case .spiritual, .mentalHealth: return "Personal Growth"
-        }
-    }
-}
+// TrackType is defined in rpd_9_LLMApp.swift

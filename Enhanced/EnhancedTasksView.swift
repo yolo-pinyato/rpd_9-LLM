@@ -110,14 +110,18 @@ struct EnhancedTasksView: View {
                             currentTrackBanner(track: track)
                         }
 
-                        // Pulse Survey Section
-                        taskSection(title: "Weekly Check-In", icon: "waveform.path.ecg") {
-                            GlassTaskCard(
-                                title: "Weekly Pulse Survey",
-                                description: "Rate your week and share feedback",
-                                points: 500,
-                                isCompleted: false
-                            ) {
+                        // Pulse Survey Section - Always shown at the top
+                        VStack(alignment: .leading, spacing: 15) {
+                            HStack {
+                                Image(systemName: "waveform.path.ecg")
+                                    .foregroundColor(.pink)
+                                Text("Weekly Check-In")
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                            }
+                            
+                            PulseSurveyCard {
                                 DatabaseManagerEnhanced.shared.logEvent(screen: "Tasks", action: "task_started", detail: "Pulse Survey")
                                 showPulseSurvey = true
                             }
@@ -150,7 +154,13 @@ struct EnhancedTasksView: View {
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .sheet(isPresented: $showPulseSurvey) {
-                PulseSurveyView(viewModel: viewModel, isPresented: $showPulseSurvey)
+                PulseSurveyView(
+                    userId: viewModel.user.id,
+                    onComplete: { points in
+                        viewModel.user.pointsBalance += points
+                    },
+                    isPresented: $showPulseSurvey
+                )
             }
             .sheet(isPresented: $showLearningView) {
                 if let task = selectedTask {
