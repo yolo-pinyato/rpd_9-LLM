@@ -643,6 +643,51 @@ class EnhancedDatabaseManager {
 
         print("✅ Check-in saved for user: \(checkIn.userId)")
     }
+
+    // MARK: - Database Export
+
+    /// Export database to Desktop for external access
+    func exportDatabaseToDesktop() -> String? {
+        guard let sourceURL = getDatabaseURL() else {
+            print("❌ Could not find database URL")
+            return nil
+        }
+
+        let fileManager = FileManager.default
+        guard let desktopURL = fileManager.urls(for: .desktopDirectory, in: .userDomainMask).first else {
+            print("❌ Could not find Desktop directory")
+            return nil
+        }
+
+        // Create timestamped filename
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
+        let timestamp = dateFormatter.string(from: Date())
+        let destinationURL = desktopURL.appendingPathComponent("workforce_dev_\(timestamp).sqlite")
+
+        do {
+            // Copy database file
+            try fileManager.copyItem(at: sourceURL, to: destinationURL)
+            print("✅ Database exported to: \(destinationURL.path)")
+            return destinationURL.path
+        } catch {
+            print("❌ Error exporting database: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    /// Get the database file URL
+    func getDatabaseURL() -> URL? {
+        let fileURL = try? FileManager.default
+            .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+            .appendingPathComponent("workforce_dev.sqlite")
+        return fileURL
+    }
+
+    /// Get database path for logging
+    func getDatabasePath() -> String {
+        return getDatabaseURL()?.path ?? "Unknown"
+    }
 }
 
 // MARK: - Point Allocation Algorithm
